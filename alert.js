@@ -2,8 +2,8 @@ import WebSocket from "ws";
 import fetch from "node-fetch";
 import fs from "fs";
 
-const SYMBOL = "1HZ25V"; // ✅ Correct Volatility 25 (1s)
-const SYMBOL_TAG = "☕ V25 (1s) — 1HZ25V";
+const SYMBOL = "1HZ25V";
+const SYMBOL_NAME = "📊 V25 (1s) — 1HZ25V";
 
 const M15 = 900;
 const M30 = 1800;
@@ -19,18 +19,11 @@ const TG_TOKEN = process.env.TG_BOT_TOKEN;
 const TG_CHAT = process.env.TG_CHAT_ID;
 const TRIGGER_SOURCE = process.env.TRIGGER_SOURCE;
 
-// ✅ Protect against accidental manual run
 if (TRIGGER_SOURCE !== "cronjob") {
   console.log("⛔ Blocked:", TRIGGER_SOURCE);
   process.exit(0);
 }
 
-if (!TG_TOKEN || !TG_CHAT) {
-  console.log("❌ Missing Telegram secrets");
-  process.exit(1);
-}
-
-// ✅ Safe state loading
 let state = {
   trend: null,
   lastSignalCandle: null,
@@ -42,32 +35,23 @@ try {
     state = JSON.parse(fs.readFileSync("state.json"));
   }
 } catch (e) {
-  console.log("State file error, using default state.");
+  console.log("State load error.");
 }
 
 async function sendTelegram(message) {
-  try {
-    await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: TG_CHAT,
-        text: message
-      })
-    });
-  } catch (err) {
-    console.log("Telegram error:", err.message);
-  }
+  await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: TG_CHAT,
+      text: message
+    })
+  });
 }
 
 async function getCandles(granularity) {
   return new Promise((resolve, reject) => {
     const ws = new WebSocket("wss://ws.binaryws.com/websockets/v3?app_id=1089");
-
-    const timeout = setTimeout(() => {
-      ws.terminate();
-      reject(new Error("WebSocket timeout"));
-    }, 15000);
 
     ws.on("open", () => {
       ws.send(JSON.stringify({
@@ -82,32 +66,20 @@ async function getCandles(granularity) {
 
     ws.on("message", (data) => {
       const response = JSON.parse(data);
-
-      if (response.error) {
-        clearTimeout(timeout);
-        reject(new Error(response.error.message));
-        ws.close();
-      }
-
-      if (response.candles) {
-        clearTimeout(timeout);
-        resolve(response.candles);
-        ws.close();
-      }
+      if (response.error) reject(new Error(response.error.message));
+      if (response.candles) resolve(response.candles);
+      ws.close();
     });
 
-    ws.on("error", (err) => {
-      clearTimeout(timeout);
-      reject(err);
-    });
+    ws.on("error", reject);
   });
 }
 
 function sma(data, length) {
   return data.map((_, i, arr) => {
     if (i < length - 1) return null;
-    const slice = arr.slice(i - length + 1, i + 1);
-    return slice.reduce((a, b) => a + b, 0) / length;
+    return arr.slice(i - length + 1, i + 1)
+      .reduce((a, b) => a + b, 0) / length;
   });
 }
 
@@ -118,39 +90,33 @@ function calculateATR(candles, period) {
     const low = parseFloat(candles[i].low);
     const prevClose = parseFloat(candles[i - 1].close);
 
-    const tr = Math.max(
+    trs.push(Math.max(
       high - low,
       Math.abs(high - prevClose),
       Math.abs(low - prevClose)
-    );
-
-    trs.push(tr);
+    ));
   }
-
-  const recent = trs.slice(-period);
-  return recent.reduce((a, b) => a + b, 0) / period;
+  return trs.slice(-period)
+    .reduce((a, b) => a + b, 0) / period;
 }
 
 function fractals(highs, lows) {
-  let up = [];
-  let down = [];
-
+  let up = [], down = [];
   for (let i = 2; i < highs.length - 2; i++) {
     if (
-      highs[i] > highs[i - 1] &&
-      highs[i] > highs[i - 2] &&
-      highs[i] > highs[i + 1] &&
-      highs[i] > highs[i + 2]
+      highs[i] > highs[i-1] &&
+      highs[i] > highs[i-2] &&
+      highs[i] > highs[i+1] &&
+      highs[i] > highs[i+2]
     ) up[i] = highs[i];
 
     if (
-      lows[i] < lows[i - 1] &&
-      lows[i] < lows[i - 2] &&
-      lows[i] < lows[i + 1] &&
-      lows[i] < lows[i + 2]
+      lows[i] < lows[i-1] &&
+      lows[i] < lows[i-2] &&
+      lows[i] < lows[i+1] &&
+      lows[i] < lows[i+2]
     ) down[i] = lows[i];
   }
-
   return { up, down };
 }
 
@@ -169,48 +135,61 @@ function fractals(highs, lows) {
     const atr = calculateATR(m15, ATR_PERIOD);
 
     const last = closes.length - 1;
+    const prev = last - 1;
+
     const candleTime = m15[last].epoch;
+    const isoTime = new Date(candleTime * 1000).toISOString();
     const closePrice = closes[last];
 
     let newTrend = state.trend;
     let crossHappened = false;
 
-    if (sma4[last - 1] < sma34[last - 1] && sma4[last] > sma34[last]) {
+    if (sma4[prev] < sma34[prev] && sma4[last] > sma34[last]) {
       newTrend = "BUY";
       crossHappened = true;
     }
 
-    if (sma4[last - 1] > sma34[last - 1] && sma4[last] < sma34[last]) {
+    if (sma4[prev] > sma34[prev] && sma4[last] < sma34[last]) {
       newTrend = "SELL";
       crossHappened = true;
     }
 
     const { up, down } = fractals(highs30, lows30);
-    let lastUp = up.filter(Boolean).pop();
-    let lastDown = down.filter(Boolean).pop();
+    const lastUp = up.filter(Boolean).pop();
+    const lastDown = down.filter(Boolean).pop();
+
+    let fractalBreak = null;
+    if (newTrend === "BUY" && lastUp && closePrice > lastUp) fractalBreak = "BUY";
+    if (newTrend === "SELL" && lastDown && closePrice < lastDown) fractalBreak = "SELL";
 
     if (DEBUG) {
+      console.log("════════ V25 (1s) DEBUG ════════");
+      console.log("Time:", isoTime);
       console.log("Close:", closePrice);
-      console.log("Trend:", newTrend);
+      console.log("SMA4 Prev:", sma4[prev]);
+      console.log("SMA34 Prev:", sma34[prev]);
+      console.log("SMA4 Curr:", sma4[last]);
+      console.log("SMA34 Curr:", sma34[last]);
+      console.log("Cross:", crossHappened);
+      console.log("FractalBreak:", fractalBreak);
+      console.log("════════════════════════════════");
     }
 
-    // ✅ TREND CHANGE MESSAGE (UPDATED)
     if (crossHappened && state.lastSignalCandle !== candleTime) {
       await sendTelegram(
-`${SYMBOL_TAG}
+`══════════════════════
+${SYMBOL_NAME}
+══════════════════════
 
 🔄 TREND CHANGE → ${newTrend}
 
 Price: ${closePrice}
+Time: ${isoTime}
+
 Waiting for M30 fractal break confirmation...`
       );
       state.lastSignalCandle = candleTime;
     }
-
-    let fractalBreak = null;
-
-    if (newTrend === "BUY" && lastUp && closePrice > lastUp) fractalBreak = "BUY";
-    if (newTrend === "SELL" && lastDown && closePrice < lastDown) fractalBreak = "SELL";
 
     if (fractalBreak && state.lastFractalBreakCandle !== candleTime) {
 
@@ -232,14 +211,18 @@ Waiting for M30 fractal break confirmation...`
       }
 
       await sendTelegram(
-`${SYMBOL_TAG}
+`══════════════════════
+${SYMBOL_NAME}
+══════════════════════
 
-✅ ${fractalBreak} CONFIRMED
+✅ ${fractalBreak} CONFIRMED — Hybrid Stop
 
 Entry: ${entry}
 Stop: ${finalStop.toFixed(3)}
 TP: ${tp.toFixed(3)}
-RR: 1 : ${RISK_REWARD}`
+RR: 1 : ${RISK_REWARD}
+
+Time: ${isoTime}`
       );
 
       state.lastFractalBreakCandle = candleTime;
@@ -249,7 +232,7 @@ RR: 1 : ${RISK_REWARD}`
     fs.writeFileSync("state.json", JSON.stringify(state, null, 2));
 
   } catch (err) {
-    console.error("❌ BOT ERROR:", err.message);
+    console.error("BOT ERROR:", err.message);
     process.exit(1);
   }
 })();
