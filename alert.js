@@ -2,7 +2,7 @@ import WebSocket from "ws";
 import fetch from "node-fetch";
 import fs from "fs";
 
-const SYMBOL = "1HZ25V";   // ✅ Correct Volatility 25 (1s)
+const SYMBOL = "1HZ25V"; // ✅ Correct Volatility 25 (1s)
 const SYMBOL_TAG = "☕ V25 (1s) — 1HZ25V";
 
 const M15 = 900;
@@ -19,6 +19,7 @@ const TG_TOKEN = process.env.TG_BOT_TOKEN;
 const TG_CHAT = process.env.TG_CHAT_ID;
 const TRIGGER_SOURCE = process.env.TRIGGER_SOURCE;
 
+// ✅ Protect against accidental manual run
 if (TRIGGER_SOURCE !== "cronjob") {
   console.log("⛔ Blocked:", TRIGGER_SOURCE);
   process.exit(0);
@@ -29,6 +30,7 @@ if (!TG_TOKEN || !TG_CHAT) {
   process.exit(1);
 }
 
+// ✅ Safe state loading
 let state = {
   trend: null,
   lastSignalCandle: null,
@@ -192,12 +194,15 @@ function fractals(highs, lows) {
       console.log("Trend:", newTrend);
     }
 
+    // ✅ TREND CHANGE MESSAGE (UPDATED)
     if (crossHappened && state.lastSignalCandle !== candleTime) {
       await sendTelegram(
 `${SYMBOL_TAG}
 
 🔄 TREND CHANGE → ${newTrend}
-Price: ${closePrice}`
+
+Price: ${closePrice}
+Waiting for M30 fractal break confirmation...`
       );
       state.lastSignalCandle = candleTime;
     }
