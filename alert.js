@@ -174,14 +174,28 @@ function fractals(highs, lows) {
 
     let crossDirection = null;
 
-    // ✅ Robust crossover detection
-    if (sma4[prev] <= sma34[prev] && sma4[last] > sma34[last]) {
-      crossDirection = "BUY";
-    }
+    // ✅ Buffered crossover detection (prevents missed crosses)
 
-    if (sma4[prev] >= sma34[prev] && sma4[last] < sma34[last]) {
-      crossDirection = "SELL";
-    }
+// ✅ Check most recent transition (prev → current)
+if (sma4[prev] <= sma34[prev] && sma4[last] > sma34[last]) {
+  crossDirection = "BUY";
+}
+
+if (sma4[prev] >= sma34[prev] && sma4[last] < sma34[last]) {
+  crossDirection = "SELL";
+}
+
+// ✅ Check one candle earlier (prev-1 → prev)
+if (!crossDirection && prev - 1 >= 0) {
+
+  if (sma4[prev - 1] <= sma34[prev - 1] && sma4[prev] > sma34[prev]) {
+    crossDirection = "BUY";
+  }
+
+  if (sma4[prev - 1] >= sma34[prev - 1] && sma4[prev] < sma34[prev]) {
+    crossDirection = "SELL";
+  }
+}
 
     if (crossDirection && state.lastCrossCandle !== candleTime) {
       state.activeDirection = crossDirection;
