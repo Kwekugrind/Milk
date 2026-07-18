@@ -38,7 +38,7 @@ try {
   console.log("State load error.");
 }
 
-// ✅ STATE VISIBILITY (IMPORTANT)
+// ✅ STATE VISIBILITY
 console.log("✅ Loaded state at start:", state);
 
 async function sendTelegram(message) {
@@ -167,7 +167,6 @@ function fractals(highs, lows) {
     const sma34 = sma(closes, 34);
     const atr = calculateATR(m15, ATR_PERIOD);
 
-    // ✅ Use last fully CLOSED candle (never forming candle)
     const last = closes.length - 2;
     const prev = last - 1;
 
@@ -177,7 +176,6 @@ function fractals(highs, lows) {
 
     let crossDirection = null;
 
-    // ✅ Check most recent transition
     if (sma4[prev] <= sma34[prev] && sma4[last] > sma34[last]) {
       crossDirection = "BUY";
     }
@@ -186,7 +184,6 @@ function fractals(highs, lows) {
       crossDirection = "SELL";
     }
 
-    // ✅ Buffered cross check (one candle back)
     if (!crossDirection && prev - 1 >= 0) {
 
       if (sma4[prev - 1] <= sma34[prev - 1] && sma4[prev] > sma34[prev]) {
@@ -258,6 +255,29 @@ RR: 1 : ${RISK_REWARD}
 
 Time: ${isoTime}`
       );
+
+      // ✅ OMNISIGHT TRADE LOGGING
+      let trades = [];
+
+      if (fs.existsSync("trades.json")) {
+        trades = JSON.parse(fs.readFileSync("trades.json"));
+      }
+
+      const trade = {
+        repo: "Milk Machine",
+        symbol: SYMBOL,
+        direction: fractalBreak,
+        entry: entry,
+        stop: finalStop,
+        tp: tp,
+        rr: RISK_REWARD,
+        openTime: isoTime,
+        closeTime: null,
+        result: null
+      };
+
+      trades.push(trade);
+      fs.writeFileSync("trades.json", JSON.stringify(trades, null, 2));
 
       state.activeDirection = null;
       state.lastConfirmCandle = candleTime;
