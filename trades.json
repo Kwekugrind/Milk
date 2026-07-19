@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "repo": "Milk Machine",
+    "symbol": "R_50",
+    "direction": "BUY",
+    "entry": 99.4828,
+    "stop": 98.56441029411765,
+    "tp": 100.86038455882351,
+    "rr": 1.5,
+    "openTime": "2026-07-19T18:45:00.000Z",
+    "closeTime": null,
+    "result": null
+  }
+]
