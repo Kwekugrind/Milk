@@ -22,7 +22,8 @@
     "rr": 1.5,
     "openTime": "2026-07-19T21:45:00.000Z",
     "closeTime": null,
-    "result": null
+    "result": null,
+    "warningSent": true
   },
   {
     "repo": "Milk Machine",
