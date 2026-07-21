@@ -76,7 +76,8 @@
     "rr": 1.5,
     "openTime": "2026-07-21T12:45:00.000Z",
     "closeTime": null,
-    "result": null
+    "result": null,
+    "warningSent": true
   },
   {
     "id": "R_50-2026-07-21T13:00:00.000Z",
