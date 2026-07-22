@@ -56,7 +56,7 @@ async function getCandles(granularity, retries = 3) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const candles = await new Promise((resolve, reject) => {
-        const ws = new WebSocket("wss://ws.derivws.com/websockets/v3?app_id=1089");
+        const ws = new WebSocket("wss://ws.binaryws.com/websockets/v3?app_id=1089");
 
         const timeout = setTimeout(() => {
           ws.terminate();
@@ -237,7 +237,7 @@ RR: 1 : ${RISK_REWARD}
 Time: ${isoTime}`
       );
 
-      // ✅ OMNISIGHT TRADE LOGGING (With Entry Guard)
+      // ✅ OMNISIGHT TRADE LOGGING (With Entry Guard and Redundant Flags)
       let trades = fs.existsSync("trades.json")
         ? JSON.parse(fs.readFileSync("trades.json"))
         : [];
@@ -257,7 +257,8 @@ Time: ${isoTime}`
           openTime: isoTime,
           closeTime: null,
           result: null,
-          warningSent: false
+          warningSentOmni: false, // Used by central report.js
+          warningSentBot: false   // Used by local alert.js
         };
 
         trades.push(trade);
@@ -268,12 +269,12 @@ Time: ${isoTime}`
       state.lastConfirmCandle = candleTime;
     }
 
-    // ✅ MACD WARNING SYSTEM
+    // ✅ MACD WARNING SYSTEM (Bot Version)
     let trades = fs.existsSync("trades.json")
       ? JSON.parse(fs.readFileSync("trades.json"))
       : [];
 
-    const openTrade = trades.find(t => t.result === null && !t.warningSent);
+    const openTrade = trades.find(t => t.result === null && t.warningSentBot !== true);
 
     if (openTrade) {
 
@@ -291,18 +292,19 @@ Time: ${isoTime}`
         await sendTelegram(`
 ⚠⚠⚠ CLOSE ${openTrade.direction} TRADE NOW ⚠⚠⚠
 
+[Bot Reminder]
 Repo: Milk Machine
 Symbol: ${SYMBOL_NAME}
 Direction: ${openTrade.direction}
 Entry: ${openTrade.entry}
 Current Price: ${currentPrice}
 
-MACD (M5) is ${macd < 0 ? "below" : "above"} zero.
+MACD (M5) crossed zero.
 
 EXIT IMMEDIATELY.
 `);
 
-        openTrade.warningSent = true;
+        openTrade.warningSentBot = true;
         fs.writeFileSync("trades.json", JSON.stringify(trades, null, 2));
       }
     }
