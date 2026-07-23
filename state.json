@@ -1,5 +1,6 @@
 {
   "activeDirection": null,
   "lastCrossCandle": 1784775600,
-  "lastConfirmCandle": 1784785500
+  "lastConfirmCandle": 1784785500,
+  "lastProcessedEpoch": 1784805000
 }
