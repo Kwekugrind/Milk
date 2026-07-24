@@ -13,5 +13,20 @@
     "openTime": "2026-07-23 17:20:00",
     "closeTime": "2026-07-23T19:10:21.017Z",
     "result": "LOSS"
+  },
+  {
+    "id": "R_50-2026-07-24T01:35:00.000Z",
+    "repo": "Milk Machine",
+    "symbol": "R_50",
+    "direction": "SELL",
+    "entry": 94.7457,
+    "sl": 95.9965,
+    "tp1": 93.4949,
+    "tp2": 92.2441,
+    "tp3": 90.9933,
+    "rr": 1.5,
+    "openTime": "2026-07-24 01:35:00",
+    "closeTime": null,
+    "result": null
   }
 ]
