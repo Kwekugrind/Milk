@@ -140,10 +140,18 @@ async function runScanMode() {
     if (openTrade) {
       const currentPrice = await getCurrentPrice();
       const macdFlipped = (openTrade.direction === "BUY" && macd < 0) || (openTrade.direction === "SELL" && macd > 0);
+      const slHit =
+        (openTrade.direction === "BUY"  && currentPrice <= openTrade.sl) ||
+        (openTrade.direction === "SELL" && currentPrice >= openTrade.sl);
+
       let settledResult = null, exitReason = "";
 
-      if (openTrade.tp1Reached) {
-        // ── PHASE 2: After TP1 — always WIN ──
+      if (slHit) {
+        // ── STOP LOSS HIT (highest priority) ──
+        settledResult = "LOSS";
+        exitReason = "Stop Loss Hit";
+      } else if (openTrade.tp1Reached) {
+        // ── PHASE 2: After TP1 — trail with MACD ──
         if (macdFlipped) { settledResult = "WIN"; exitReason = "MACD Trail Exit (after TP1)"; }
       } else {
         // ── PHASE 1: Before TP1 ──
