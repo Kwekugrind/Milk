@@ -91,5 +91,22 @@
     "openTime": "2026-07-27 02:40:00",
     "closeTime": "2026-07-27T07:25:13.336Z",
     "result": "WIN"
+  },
+  {
+    "id": "R_50-2026-07-27T16:40:00.000Z",
+    "repo": "Milk Machine",
+    "symbol": "R_50",
+    "direction": "BUY",
+    "entry": 105.7343,
+    "sl": 104.4562,
+    "tp1": 107.65145000000001,
+    "tp2": 108.29050000000002,
+    "tp3": 109.56860000000003,
+    "rr": 1.5,
+    "tp1Reached": false,
+    "macdEarlyFlipEpoch": null,
+    "openTime": "2026-07-27 16:40:00",
+    "closeTime": null,
+    "result": null
   }
 ]
