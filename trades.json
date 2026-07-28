@@ -106,8 +106,8 @@
     "tp1Reached": true,
     "macdEarlyFlipEpoch": 1785238800,
     "openTime": "2026-07-27 16:40:00",
-    "closeTime": null,
-    "result": null,
+    "closeTime": "2026-07-28T11:50:16.249Z",
+    "result": "WIN",
     "lastInProfit": true
   }
 ]
