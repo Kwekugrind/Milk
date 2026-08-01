@@ -79,7 +79,6 @@ function calculateATR(candles, period) {
   return trs.slice(-period).reduce((a, b) => a + b, 0) / period;
 }
 
-// Combined pool: both fractal highs and lows chronologically, last 8 used for max/min
 function getFractals(candles) {
   let pool = [];
   for (let i = 2; i < candles.length - 2; i++) {
@@ -92,14 +91,14 @@ function getFractals(candles) {
   return { significantHigh: recent.length > 0 ? Math.max(...recent) : null, significantLow: recent.length > 0 ? Math.min(...recent) : null };
 }
 
-async function fetchH1EMA50() {
+async function fetchH1Data() {
   try {
     const h1 = await fetchCandles(3600, 60);
-    if (!h1 || h1.length < 50) return null;
+    if (!h1 || h1.length < 50) return { ema50: null, open: null };
     const closes = h1.map(c => parseFloat(c.close));
     const emaArr = ema(closes, 50);
-    return emaArr[emaArr.length - 1];
-  } catch { return null; }
+    return { ema50: emaArr[emaArr.length - 1], open: parseFloat(h1[h1.length - 1].open) };
+  } catch { return { ema50: null, open: null }; }
 }
 
 async function fetchH4Candle() {
@@ -164,13 +163,12 @@ async function runScanMode() {
     const currentCandleEpoch = candles[i].epoch;
     const closes = candles.map(c => parseFloat(c.close));
 
-    // ── Dual MACD: slow(8,100) trails winners, fast(4,34) cuts losers ──
     const emaFast = ema(closes, 4);
     const emaSlow = ema(closes, 34);
     const ema8    = ema(closes, 8);
     const ema100  = ema(closes, 100);
-    const macdFast = emaFast[i] - emaSlow[i];   // 4,34 — reacts quickly, cuts losses
-    const macdSlow = ema8[i]   - ema100[i];     // 8,100 — slow trail, lets winners run
+    const macdFast = emaFast[i] - emaSlow[i];
+    const macdSlow = ema8[i]   - ema100[i];
 
     let openTrade = trades.find(t => t.result === null);
 
@@ -180,13 +178,11 @@ async function runScanMode() {
       const inProfit = (openTrade.direction === "BUY"  && currentPrice >= openTrade.entry) ||
                        (openTrade.direction === "SELL" && currentPrice <= openTrade.entry);
 
-      // Reset 2-candle flip tracker when price crosses entry (profit mode changes)
       if (openTrade.lastInProfit !== null && openTrade.lastInProfit !== inProfit) {
         openTrade.macdEarlyFlipEpoch = null;
       }
       openTrade.lastInProfit = inProfit;
 
-      // Select which MACD controls the exit
       const activeMACD = inProfit ? macdSlow : macdFast;
       const macdFlipped = (openTrade.direction === "BUY"  && activeMACD < 0) ||
                           (openTrade.direction === "SELL" && activeMACD > 0);
@@ -200,36 +196,46 @@ async function runScanMode() {
         settledResult = "LOSS";
         exitReason = "Stop Loss Hit";
       } else {
-        // TP1 notification (informational only — no longer controls exit phase)
-        if (!openTrade.tp1Reached) {
-          if ((openTrade.direction === "BUY"  && currentPrice >= openTrade.tp1) ||
-              (openTrade.direction === "SELL" && currentPrice <= openTrade.tp1)) {
-            openTrade.tp1Reached = true;
-            fs.writeFileSync("trades.json", JSON.stringify(trades, null, 2));
-            await sendTelegram(
-              `🎯 *TP1 Hit!*\n` +
-              `Symbol: ${SYMBOL_NAME}\nDirection: ${openTrade.direction}\n` +
-              `Price: ${currentPrice.toFixed(4)} | TP1: ${openTrade.tp1.toFixed(4)}\n\n` +
-              `Now trailing with MACD(8,100). Will hold while trend continues.`
-            );
+        // H1 Open Break — only when in loss, uses confirmed M5 close
+        if (!inProfit && openTrade.h1OpenAtEntry != null) {
+          const h1Breach = (openTrade.direction === "BUY"  && closes[i] < openTrade.h1OpenAtEntry) ||
+                           (openTrade.direction === "SELL" && closes[i] > openTrade.h1OpenAtEntry);
+          if (h1Breach) {
+            settledResult = "LOSS";
+            exitReason = "H1 Open Break — early loss cut";
           }
         }
 
-        // 2-candle MACD confirmation exit
-        if (macdFlipped) {
-          if (!openTrade.macdEarlyFlipEpoch) {
-            openTrade.macdEarlyFlipEpoch = currentCandleEpoch;
-            fs.writeFileSync("trades.json", JSON.stringify(trades, null, 2));
-          } else if (openTrade.macdEarlyFlipEpoch !== currentCandleEpoch) {
-            settledResult = inProfit ? "WIN" : "LOSS";
-            exitReason = inProfit
-              ? "MACD(8,100) Trail Exit — held above entry"
-              : "MACD(4,34) Early Exit — price below entry";
+        if (!settledResult) {
+          if (!openTrade.tp1Reached) {
+            if ((openTrade.direction === "BUY"  && currentPrice >= openTrade.tp1) ||
+                (openTrade.direction === "SELL" && currentPrice <= openTrade.tp1)) {
+              openTrade.tp1Reached = true;
+              fs.writeFileSync("trades.json", JSON.stringify(trades, null, 2));
+              await sendTelegram(
+                `🎯 *TP1 Hit!*\n` +
+                `Symbol: ${SYMBOL_NAME}\nDirection: ${openTrade.direction}\n` +
+                `Price: ${currentPrice.toFixed(4)} | TP1: ${openTrade.tp1.toFixed(4)}\n\n` +
+                `Now trailing with MACD(8,100). Will hold while trend continues.`
+              );
+            }
           }
-        } else {
-          if (openTrade.macdEarlyFlipEpoch) {
-            openTrade.macdEarlyFlipEpoch = null;
-            fs.writeFileSync("trades.json", JSON.stringify(trades, null, 2));
+
+          if (macdFlipped) {
+            if (!openTrade.macdEarlyFlipEpoch) {
+              openTrade.macdEarlyFlipEpoch = currentCandleEpoch;
+              fs.writeFileSync("trades.json", JSON.stringify(trades, null, 2));
+            } else if (openTrade.macdEarlyFlipEpoch !== currentCandleEpoch) {
+              settledResult = inProfit ? "WIN" : "LOSS";
+              exitReason = inProfit
+                ? "MACD(8,100) Trail Exit — held above entry"
+                : "MACD(4,34) Early Exit — price below entry";
+            }
+          } else {
+            if (openTrade.macdEarlyFlipEpoch) {
+              openTrade.macdEarlyFlipEpoch = null;
+              fs.writeFileSync("trades.json", JSON.stringify(trades, null, 2));
+            }
           }
         }
       }
@@ -286,7 +292,8 @@ async function runScanMode() {
     const fractalBreakUp = fractals.significantHigh !== null && closes[i] > fractals.significantHigh;
     const fractalBreakDown = fractals.significantLow !== null && closes[i] < fractals.significantLow;
 
-    const h1Ema50 = await fetchH1EMA50();
+    const h1Data = await fetchH1Data();
+    const h1Ema50 = h1Data.ema50;
     const h4Candle = await fetchH4Candle();
     if (!h4Candle) {
       console.log("⚠️ H4 unavailable — skipping signal scan");
@@ -317,6 +324,7 @@ async function runScanMode() {
       trades.push({
         id: `${SYMBOL}-${isoTime}`, repo: REPO_LABEL, symbol: SYMBOL,
         direction, entry, sl, tp1, tp2, tp3, rr: RISK_REWARD,
+        h1OpenAtEntry: h1Data.open,
         tp1Reached: false, macdEarlyFlipEpoch: null, lastInProfit: null,
         openTime: timeFormatted, closeTime: null, result: null
       });
