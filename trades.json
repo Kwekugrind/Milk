@@ -40,5 +40,26 @@
     "closeTime": "2026-08-02T23:35:17.146Z",
     "result": "LOSS",
     "pnlUSD": -5.16
+  },
+  {
+    "id": "R_100-2026-08-02T23:45:00.000Z",
+    "contractId": 7785386799,
+    "repo": "Milk Machine",
+    "symbol": "R_100",
+    "direction": "BUY",
+    "entry": 656.93,
+    "sl": 639.28,
+    "tp1": 683.405,
+    "tp2": 692.2299999999999,
+    "tp3": 709.8799999999999,
+    "h1OpenAtEntry": 650.25,
+    "tp1Reached": false,
+    "macdEarlyFlipEpoch": null,
+    "lastInProfit": null,
+    "peakProfit": null,
+    "rr": 1.5,
+    "openTime": "2026-08-02 23:45:00",
+    "closeTime": null,
+    "result": null
   }
 ]
