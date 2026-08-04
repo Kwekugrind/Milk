@@ -1,11 +1,11 @@
 {
   "waitingFor": null,
   "setupEpoch": null,
-  "lastProcessedEpoch": 1785864000,
+  "lastProcessedEpoch": 1785864300,
   "lastTgUpdateId": 0,
   "h1CrossDir": "SELL",
   "h1CrossEpoch": 1785808800,
-  "m15CrossDir": "SELL",
-  "m15CrossEpoch": 1785856500,
+  "m15CrossDir": null,
+  "m15CrossEpoch": null,
   "lastM15SetupEpoch": null
 }
