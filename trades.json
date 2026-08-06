@@ -126,5 +126,25 @@
     "openTime": "2026-08-06 03:25:00",
     "closeTime": "2026-08-06 05:15:16",
     "result": "LOSS"
+  },
+  {
+    "id": "R_100-2026-08-06T07:35:00.000Z",
+    "contractId": 8190835579,
+    "repo": "Milk (V100 Demo)",
+    "symbol": "R_100",
+    "direction": "SELL",
+    "entry": 589.48,
+    "sl": 597.14,
+    "tp1": 577.99,
+    "tp2": 574.1600000000001,
+    "tp3": 566.5000000000001,
+    "h1OpenAtEntry": 594.06,
+    "tp1Reached": false,
+    "macdEarlyFlipEpoch": null,
+    "peakProfit": null,
+    "rr": 1.5,
+    "openTime": "2026-08-06 07:35:00",
+    "closeTime": null,
+    "result": null
   }
 ]
