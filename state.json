@@ -3,6 +3,8 @@
   "setupEpoch": null,
   "lastProcessedEpoch": 1786058700,
   "lastTgUpdateId": 0,
+  "h1TrendDir": null,
+  "firstTradeTaken": false,
   "h1CrossDir": "SELL",
   "h1CrossEpoch": 1785808800,
   "m15CrossDir": "SELL",
