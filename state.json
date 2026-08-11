@@ -1,7 +1,7 @@
 {
   "waitingFor": null,
   "setupEpoch": null,
-  "lastProcessedEpoch": 1786426500,
+  "lastProcessedEpoch": 1786426800,
   "lastTgUpdateId": 0,
   "h1TrendEpoch": 1786420800,
   "phaseATriggeredEpoch": null,
@@ -11,5 +11,5 @@
   "pullbackEpoch": null,
   "pullbackTrigger": null,
   "rsiLowerBreakSeen": true,
-  "rsiUpperBreakSeen": true
+  "rsiUpperBreakSeen": false
 }
