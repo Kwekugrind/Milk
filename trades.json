@@ -56,6 +56,7 @@
     "openTime": "2026-08-14 13:55:00",
     "closeTime": null,
     "result": null,
-    "breakevenSet": true
+    "breakevenSet": true,
+    "exitTrigger": "TDI"
   }
 ]
