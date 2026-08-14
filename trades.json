@@ -54,8 +54,8 @@
     "peakProfit": 6.083956729006192,
     "rr": 1.5,
     "openTime": "2026-08-14 13:55:00",
-    "closeTime": null,
-    "result": null,
+    "closeTime": "2026-08-14 15:35:32",
+    "result": "WIN",
     "breakevenSet": true,
     "exitTrigger": "TDI"
   }
