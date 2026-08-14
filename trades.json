@@ -50,11 +50,12 @@
     "tp2": 665,
     "tp3": 670,
     "h1OpenAtEntry": null,
-    "tp1Reached": false,
-    "peakProfit": null,
+    "tp1Reached": true,
+    "peakProfit": 3.352016868353513,
     "rr": 1.5,
     "openTime": "2026-08-14 13:55:00",
     "closeTime": null,
-    "result": null
+    "result": null,
+    "breakevenSet": true
   }
 ]
