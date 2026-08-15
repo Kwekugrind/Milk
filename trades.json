@@ -77,6 +77,6 @@
     "openTime": "2026-08-14 23:45:00",
     "closeTime": null,
     "result": null,
-    "exitTrigger": "TDI"
+    "exitTrigger": null
   }
 ]
