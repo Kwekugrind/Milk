@@ -117,8 +117,8 @@
     "rr": 1.5,
     "entryType": "PHASE_C",
     "openTime": "2026-08-16 04:20:00",
-    "closeTime": null,
-    "result": null,
+    "closeTime": "2026-08-16 05:49:03",
+    "result": "WIN",
     "breakevenSet": true
   }
 ]
