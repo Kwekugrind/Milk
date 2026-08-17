@@ -6,5 +6,9 @@
   "h1TrendEpoch": null,
   "phaseATriggeredEpoch": null,
   "activeEntryType": null,
-  "phaseATaken": true
+  "phaseATaken": true,
+  "phaseBPending": null,
+  "phaseBStochFreshSeen": false,
+  "phaseBCciFreshSeen": false,
+  "phaseBTdiFreshSeen": false
 }
