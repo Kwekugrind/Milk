@@ -263,7 +263,7 @@
     "rr": 1.5,
     "entryType": "PHASE_B",
     "openTime": "2026-08-19 10:15:00",
-    "closeTime": null,
-    "result": null
+    "closeTime": "2026-08-19 11:46:42",
+    "result": "WIN"
   }
 ]
