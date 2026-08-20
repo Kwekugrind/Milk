@@ -392,7 +392,7 @@
     "symbol": "R_100",
     "direction": "SELL",
     "entry": 555.09,
-    "sl": 561.893542893,
+    "sl": 561.80420746407,
     "tp1": 540,
     "tp2": 535,
     "tp3": 530,
@@ -405,6 +405,7 @@
     "psarAligned": true,
     "openTime": "2026-08-20 10:05:00",
     "closeTime": null,
-    "result": null
+    "result": null,
+    "orphanRetryCount": 1
   }
 ]
