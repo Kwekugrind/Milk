@@ -368,7 +368,7 @@
     "symbol": "R_100",
     "direction": "SELL",
     "entry": 549.51,
-    "sl": 553.3745459444448,
+    "sl": 547.87,
     "tp1": 540,
     "tp2": 535,
     "tp3": 530,
@@ -380,7 +380,8 @@
     "entryType": "PHASE_B",
     "psarAligned": true,
     "openTime": "2026-08-20 07:10:00",
-    "closeTime": null,
-    "result": null
+    "closeTime": "2026-08-20 08:11:24",
+    "result": "LOSS",
+    "resultSource": "estimated_fallback"
   }
 ]
