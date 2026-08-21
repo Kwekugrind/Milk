@@ -33,7 +33,7 @@
     "symbol": "R_100",
     "direction": "BUY",
     "entry": 625.17,
-    "sl": 630.7201906947895,
+    "sl": 639.38,
     "tp1": 640,
     "tp2": 650,
     "tp3": 655,
@@ -47,7 +47,8 @@
     "brokerSlAmount": 0.21,
     "profitLockPhase": false,
     "openTime": "2026-08-21 02:15:00",
-    "closeTime": null,
-    "result": null
+    "closeTime": "2026-08-21 03:45:51",
+    "result": "WIN",
+    "resultSource": "estimated_fallback"
   }
 ]
