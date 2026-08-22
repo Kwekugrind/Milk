@@ -189,7 +189,7 @@
     "symbol": "R_100",
     "direction": "SELL",
     "entry": 590.41,
-    "sl": 592.6227387565483,
+    "sl": 585.45,
     "tp1": 580,
     "tp2": 565,
     "tp3": 560,
@@ -202,7 +202,8 @@
     "psarAligned": true,
     "brokerSlAmount": 5,
     "openTime": "2026-08-22 02:25:00",
-    "closeTime": null,
-    "result": null
+    "closeTime": "2026-08-22 03:40:51",
+    "result": "LOSS",
+    "resultSource": "estimated_fallback"
   }
 ]
